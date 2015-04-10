@@ -22,6 +22,8 @@
       Utilities,
       Extension,
       Underscore,
+      Integration,
+      Javascript,
       AMD
     </tags>
     <dependencies>
