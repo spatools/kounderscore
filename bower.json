@@ -1,0 +1,38 @@
+{
+    "name": "kounderscore",
+    "version": "0.1.0",
+    "authors": [
+        "SPA Tools"
+    ],
+    "description": "Knockout Underscore integration.",
+    "main": "dist/kounderscore.js",
+    "keywords": [
+        "knockout",
+        "knockoutjs",
+        "ko",
+        "underscore",
+        "javascript",
+        "spatools",
+        "amd"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/spatools/kounderscore",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "typings",
+        "nuget",
+        "test"
+    ],
+    "dependencies": {
+        "requirejs": "^2.1.17",
+        "underscore": "^1.8.3",
+        "knockoutjs": "^3.3.0"
+    },
+    "devDependencies": {
+        "mocha": "~1.17.1",
+        "should": "3.1.2",
+        "sinon": "http://sinonjs.org/releases/sinon-1.8.1.js"
+    }
+}
