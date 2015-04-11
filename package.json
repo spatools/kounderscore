@@ -1,6 +1,6 @@
 ﻿{
     "name": "kounderscore",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Knockout Underscore integration.",
     "main": "dist/kounderscore.js",
     "scripts": {
@@ -19,9 +19,6 @@
         "spatools",
         "amd"
     ],
-    "peerDependencies": { 
-        "typescript": "~1.4.1"
-    },
     "devDependencies": {
         "grunt": "^0.4.5",
         "grunt-contrib-clean": "^0.6.0",
@@ -33,8 +30,7 @@
         "grunt-typescript": "^0.6.1",
         "grunt-tslint": "^2.0.0",
         "jit-grunt": "^0.9.1",
-        "time-grunt": "^1.0.0",
-        "typescript": "~1.4.1"
+        "time-grunt": "^1.0.0"
     },
     "author": "SPA Tools",
     "license": "MIT",
