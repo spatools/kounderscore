@@ -128,8 +128,14 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask("createdecla", function () {
+        var content = grunt.file.read("src/kounderscore.d.ts");
+        content = content.replace(/\.{2}\/typings/g, "../../../typings");
+        grunt.file.write("dist/kounderscore.d.ts", content);
+    });
+
     grunt.registerTask("dev", ["tslint:dev", "typescript:dev", "jshint:dev"]);
-    grunt.registerTask("build", ["tslint:dev", "typescript:dist", "uglify:dist", "jshint:dist"]);
+    grunt.registerTask("build", ["tslint:dev", "typescript:dist", "uglify:dist", "jshint:dist", "createdecla"]);
 
     grunt.registerTask("test", ["dev", "tslint:test", "typescript:test", "jshint:test", "mocha:test", "clean"]);
     grunt.registerTask("btest", ["dev", "tslint:test", "typescript:test", "jshint:test", "connect:test", "clean"]);
