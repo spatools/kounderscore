@@ -1,5 +1,5 @@
-﻿/// <reference path="../typings/knockout/knockout.d.ts" />
-/// <reference path="../typings/underscore/underscore.d.ts" />
+/// <reference path="../../../typings/knockout/knockout.d.ts" />
+/// <reference path="../../../typings/underscore/underscore.d.ts" />
 
 interface UnderscoreStatic {
     sum<T>(list: _.List<T>, iterator: _.ListIterator<T, number>, context?: any): number;
