@@ -104,61 +104,108 @@
 
     //#endregion
 
-    //#region UnderscoreJS integration with KnockoutJS
+    //#region UnderscoreJS wrapping for Knockout
 
-    exports.objects = {};
-    exports.collections = {};
-
-    _.each(["keys", "values", "clone", "isEmpty"], method => {
-        exports.objects["_" + method] = function () {
-            var args = arguments;
-            return ko.computed(function () {
-                return this[method].apply(this, args);
-            }, this);
-        };
-        exports.objects[method] = function () {
-            p.unshift.call(arguments, this());
-            return _[method].apply(_, arguments);
-        };
-    });
-    _.each(["each", "map", "filterMap", "reduce", "find", "filter", "reject", "sum", "average", "all", "any", "contains", "max", "min", "sortBy", "groupBy", "toArray", "count", "size", "index"], method => {
-        exports.collections["_" + method] = function () {
-            var args = arguments;
-            return ko.computed(function () {
-                return this[method].apply(this, args);
-            }, this);
-        };
-        exports.collections[method] = function () {
-            p.unshift.call(arguments, this());
-            return _[method].apply(_, arguments);
-        };
-    });
-    _.each(["first", "initial", "last", "rest", "compact", "flatten", "without", "union", "intersection", "difference", "uniq", "zip", "indexOf", "lastIndexOf"], method =>  {
-        exports.collections["_" + method] = function () {
-            var args = arguments;
-            return ko.computed(function () {
-                return this[method].apply(this, args);
-            }, this);
-        };
-        exports.collections[method] = function () {
+    function createSimpleFunction(method: string, check?: boolean): () => any {
+        return function () {
             var value = this();
-            p.unshift.call(arguments, _.isArray(value) ? value : _.values(value));
+
+            if (check && !_.isArray(value)) {
+                value = _.values(value);
+            }
+
+            p.unshift.call(arguments, value);
+
             return _[method].apply(_, arguments);
         };
-    });
-
-    function addToSubscribable<T>(val: KnockoutSubscribable<T>): void {
-        ko.utils.extend(val, exports.collections);
     }
-    exports.addToSubscribable = addToSubscribable;
 
-    function addToPrototype(val: any): void {
-        ko.utils.extend(val, exports.collections);
+    function createComputedFunction<T>(method: string, pure?: boolean, extend?: boolean): () => KnockoutComputed<T> {
+        return function () {
+            var args = arguments;
+            var result = ko.computed({
+                read: function () { return this[method].apply(this, args); },
+                pure: pure || false,
+                owner: this
+            });
+
+            if (extend) {
+                result = result.extend({ underscore: "collection" });
+            }
+
+            return result;
+        };
     }
-    exports.addToPrototype = addToPrototype;
 
-    ko.utils.extend(ko.observableArray.fn, exports.collections);
+    exports.objects = (function () {
+        var obj: any = {};
+
+        _.each(["keys", "values"], method => {
+            obj[method] = createSimpleFunction(method);
+            obj["_" + method] = createComputedFunction(method, true, true);
+            obj["__" + method] = createComputedFunction(method, false, true);
+        });
+
+        _.each(["clone", "isEmpty"], method => {
+            obj[method] = createSimpleFunction(method);
+            obj["_" + method] = createComputedFunction(method, true);
+            obj["__" + method] = createComputedFunction(method, false);
+        });
+
+        return obj;
+    })();
+
+    exports.collections = (function () {
+        var obj: any = {};
+
+        _.each(["map", "filterMap", "filter", "reject", "sortBy", "toArray"], method => {
+            obj[method] = createSimpleFunction(method);
+            obj["_" + method] = createComputedFunction(method, true, true);
+            obj["__" + method] = createComputedFunction(method, false, true);
+        });
+        _.each(["each", "reduce", "find", "sum", "average", "all", "any", "contains", "min", "max", "groupBy", "count", "index", "size"], method => {
+            obj[method] = createSimpleFunction(method);
+            obj["_" + method] = createComputedFunction(method, true);
+            obj["__" + method] = createComputedFunction(method, false);
+        });
+
+        _.each(["initial", "rest", "compact", "flatten", "without", "union", "intersection", "difference", "uniq"], method => {
+            obj[method] = createSimpleFunction(method, true);
+            obj["_" + method] = createComputedFunction(method, true, true);
+            obj["__" + method] = createComputedFunction(method, false, true);
+        });
+        _.each(["first", "last", "zip", "indexOf", "lastIndexOf"], method => {
+            obj[method] = createSimpleFunction(method, true);
+            obj["_" + method] = createComputedFunction(method, true);
+            obj["__" + method] = createComputedFunction(method, false);
+        });
+
+        return obj;
+    })();
 
     //#endregion
 
+    //#region UnderscoreJS integration with KnockoutJS
+
+    function addTo(val: any, mode?: string): void {
+        if (mode === "object") {
+            ko.utils.extend(val, exports.objects);
+        }
+
+        ko.utils.extend(val, exports.collections);
+    }
+    exports.addTo = addTo;
+
+    addTo(ko.observableArray.fn);
+
+    //#endregion
+
+    //#region Extender
+
+    ko.extenders.underscore = function (target: any, mode: string): any {
+        addTo(target, mode);
+        return target;
+    };
+
+    //#endregion
 }));

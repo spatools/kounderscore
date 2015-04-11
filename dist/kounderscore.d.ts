@@ -41,8 +41,6 @@ interface KnockoutUnderscoreArrayFunctions<T> {
     count(iterator: _.ListIterator<T, boolean>, context?: any): number;
     index(iterator?: _.ListIterator<T, boolean>, context?: any): number;
     size(): number;
-    first(): T;
-    last(): T;
     initial(n?: number): T[];
     rest(index?: number): T[];
     compact(): T[];
@@ -53,41 +51,47 @@ interface KnockoutUnderscoreArrayFunctions<T> {
     difference(...others: T[][]): T[];
     uniq<TSort>(isSorted?: boolean, iterator?: _.ListIterator<T, TSort>, context?: any): T[];
     zip(...arrays: any[][]): any[][];
+
+    first(): T;
+    last(): T;
     indexOf(value: T, isSorted?: boolean): number;
     lastIndexOf(value: T, from?: number): number;
 
+    _map<TResult>(iterator: _.ListIterator<T, TResult>, context?: any): KnockoutUnderscoreComputed<TResult>;
+    _filterMap<TResult>(iterator?: _.ListIterator<T, TResult>, context?: any): KnockoutUnderscoreComputed<TResult>;
+    _filter(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutUnderscoreComputed<T>;
+    _reject(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutUnderscoreComputed<T>;
+    _sortBy<T, TSort>(iterator: _.ListIterator<T, TSort>, context?: any): KnockoutUnderscoreComputed<T>;
+    _toArray(): KnockoutUnderscoreComputed<T>;
+
     _each(iterator: _.ListIterator<T, void>, context?: any): KnockoutComputed<void>;
-    _map<TResult>(iterator: _.ListIterator<T, TResult>, context?: any): KnockoutComputed<TResult[]>;
-    _filterMap<TResult>(iterator?: _.ListIterator<T, TResult>, context?: any): KnockoutComputed<TResult[]>;
     _reduce<TResult>(iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): KnockoutComputed<TResult>;
     _find(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<T>;
-    _filter(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<T[]>;
-    _reject(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<T[]>;
     _sum(iterator: _.ListIterator<T, number>, context?: any): KnockoutComputed<number>;
     _average(iterator: _.ListIterator<T, number>, context?: any): KnockoutComputed<number>;
     _all(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<boolean>;
     _any(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<boolean>;
-    _contains(value: T): boolean;
-    _max(iterator: _.ListIterator<T, number>, context?: any): KnockoutComputed<T>;
+    _contains(value: T): KnockoutComputed<boolean>;
     _min(iterator: _.ListIterator<T, number>, context?: any): KnockoutComputed<T>;
-    _sortBy<T, TSort>(iterator: _.ListIterator<T, TSort>, context?: any): KnockoutComputed<T[]>;
+    _max(iterator: _.ListIterator<T, number>, context?: any): KnockoutComputed<T>;
     _groupBy(iterator: (element: T, index?: number, list?: T[]) => string, context?: any): KnockoutComputed<{ [key: string]: any[]; }>;
-    _toArray(): any[];
     _count(iterator: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<number>;
     _index(iterator?: _.ListIterator<T, boolean>, context?: any): KnockoutComputed<number>;
     _size(): KnockoutComputed<number>;
+
+    _initial(n?: number): KnockoutUnderscoreComputed<T>;
+    _rest(index?: number): KnockoutUnderscoreComputed<T>;
+    _compact(): KnockoutUnderscoreComputed<T>;
+    _flatten(shallow?: boolean): KnockoutUnderscoreComputed<any>;
+    _without(...values: T[]): KnockoutUnderscoreComputed<T>;
+    _union(...arrays: T[][]): KnockoutUnderscoreComputed<T>;
+    _intersection(...arrays: T[][]): KnockoutUnderscoreComputed<T>;
+    _difference(...others: T[][]): KnockoutUnderscoreComputed<T>;
+    _uniq<TSort>(isSorted?: boolean, iterator?: _.ListIterator<T, TSort>, context?: any): KnockoutUnderscoreComputed<T>;
+    _zip(...arrays: any[][]): KnockoutUnderscoreComputed<any[]>;
+
     _first(): KnockoutComputed<T>;
     _last(): KnockoutComputed<T>;
-    _initial(n?: number): KnockoutComputed<T[]>;
-    _rest(index?: number): KnockoutComputed<T[]>;
-    _compact(): KnockoutComputed<T[]>;
-    _flatten(shallow?: boolean): KnockoutComputed<any>;
-    _without(...values: T[]): KnockoutComputed<T[]>;
-    _union(...arrays: T[][]): KnockoutComputed<T[]>;
-    _intersection(...arrays: T[][]): KnockoutComputed<T[]>;
-    _difference(...others: T[][]): KnockoutComputed<T[]>;
-    _uniq<TSort>(isSorted?: boolean, iterator?: _.ListIterator<T, TSort>, context?: any): KnockoutComputed<T[]>;
-    _zip(...arrays: any[][]): KnockoutComputed<any[][]>;
     _indexOf(value: T, isSorted?: boolean): KnockoutComputed<number>;
     _lastIndexOf(value: T, from?: number): KnockoutComputed<number>;
 }
@@ -98,8 +102,8 @@ interface KnockoutUnderscoreObjectsFunctions<T> {
     clone(object: T): T;
     isEmpty(object: any): boolean;
 
-    _keys(): KnockoutComputed<string[]>;
-    _values(): KnockoutComputed<any[]>;
+    _keys(): KnockoutUnderscoreComputed<string>;
+    _values(): KnockoutUnderscoreComputed<any>;
     _clone(object: T): KnockoutComputed<T>;
     _isEmpty(object: any): KnockoutComputed<boolean>;
 }
@@ -109,12 +113,18 @@ interface KnockoutObservableArrayFunctions<T> extends KnockoutUnderscoreArrayFun
     lastIndexOf(value: T, from?: number): number;
 }
 
+interface KnockoutUnderscoreComputed<T> extends KnockoutComputed<T[]> { }
+interface KnockoutUnderscoreComputed<T> extends KnockoutUnderscoreArrayFunctions<T> { }
+
+interface KnockoutExtenders {
+    underscore(target: any, mode: string): any;
+}
+
 interface KnockoutUnderscore {
     objects: { [key: string]: Function };
     collections: { [key: string]: Function };
 
-    addToSubscribable<T>(val: KnockoutSubscribable<T>): void;
-    addToPrototype(val: any): void;
+    addTo(val: any, mode?: string): void;
 }
 
 declare module "kounderscore" {
