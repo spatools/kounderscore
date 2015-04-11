@@ -26,9 +26,8 @@ describe("Knockout.js Underscore.js integrations", () => {
         });
 
         it("should return computed value when using 'underscored' methods", () => {
-            var obsArray = ko.observableArray(_.range(1, 6));
-
-            var filtered = obsArray._filter(num => num % 2 === 0);
+            var obsArray = ko.observableArray(_.range(1, 6)),
+                filtered = obsArray._filter(num => num % 2 === 0);
 
             ko.isComputed(filtered).should.be.ok;
 
@@ -36,24 +35,50 @@ describe("Knockout.js Underscore.js integrations", () => {
             filtered().length.should.equal(2);
         });
 
-        it("should maintain computed result in sync with source observableArray", () => {
-            var obsArray = ko.observableArray(_.range(1, 6));
+        describe("computed result", () => {
 
-            var filtered = obsArray._filter(num => num % 2 === 0);
+            it("should stay in sync with source", () => {
+                var obsArray = ko.observableArray(_.range(1, 6)),
+                    filtered = obsArray._filter(num => num % 2 === 0);
 
-            ko.isComputed(filtered).should.be.ok;
+                ko.isComputed(filtered).should.be.ok;
 
-            filtered().should.be.an.Array;
-            filtered().length.should.equal(2);
+                filtered().should.be.an.Array;
+                filtered().length.should.equal(2);
 
-            obsArray.push(6, 7, 8);
+                obsArray.push(6, 7, 8);
 
-            filtered().length.should.equal(4);
+                filtered().length.should.equal(4);
+            });
+
+            it("should contain underscore collection methods", () => {
+                var obsArray = ko.observableArray(_.range(1, 6)),
+                    filtered = obsArray._filter(num => num % 2 === 0);
+
+                Object.keys(ko_.collections).forEach(method => {
+                    filtered[method].should.be.a.Function;
+                });
+            });
+
+            it("should stay in sync even if recursive", () => {
+                var obsArray = ko.observableArray(_.range(1, 6)),
+                    filtered = obsArray._filter(num => num % 2 === 0),
+                    mapped = filtered._map(num => num * 2);
+
+                mapped().should.be.an.Array;
+                mapped().length.should.equal(2);
+
+                obsArray.push(6, 7, 8);
+
+                mapped().length.should.equal(4);
+                mapped()[0].should.equal(4);
+            });
+
         });
 
     });
 
-    describe("addToSubscribable method", () => {
+    describe("addTo method", () => {
 
         it("should add collections methods to any subscribable", () => {
             var obsArray = ko.observableArray(_.range(1, 6)),
@@ -61,7 +86,7 @@ describe("Knockout.js Underscore.js integrations", () => {
 
             (!computedArray.filter).should.be.ok;
 
-            ko_.addToSubscribable(computedArray);
+            ko_.addTo(computedArray);
 
             Object.keys(ko_.collections).forEach(method => {
                 computedArray[method].should.be.a.Function;
@@ -72,7 +97,7 @@ describe("Knockout.js Underscore.js integrations", () => {
             var obsArray = ko.observableArray(_.range(1, 6)),
                 computedArray: any = ko.computed(() => obsArray());
 
-            ko_.addToSubscribable(computedArray);
+            ko_.addTo(computedArray);
 
             var filtered = computedArray.filter(num => num % 2 === 0);
 
@@ -84,7 +109,7 @@ describe("Knockout.js Underscore.js integrations", () => {
             var obsArray = ko.observableArray(_.range(1, 6)),
                 computedArray: any = ko.computed(() => obsArray());
 
-            ko_.addToSubscribable(computedArray);
+            ko_.addTo(computedArray);
 
             var filtered = computedArray._filter(num => num % 2 === 0);
 
@@ -100,18 +125,4 @@ describe("Knockout.js Underscore.js integrations", () => {
 
     });
 
-    describe("addToPrototype method", () => {
-        var oldFn = _.clone(ko.observable.fn);
-        afterEach(() => ko.observable.fn = _.clone(oldFn));
-
-        it("should add all collection methods to given object", () => {
-            var proto = {};
-            ko_.addToPrototype(proto);
-
-            Object.keys(ko_.collections).forEach(method => {
-                proto[method].should.be.a.Function;
-            });
-        });
-
-    });
 });
